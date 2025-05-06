@@ -88,3 +88,14 @@
   box-shadow: 0 0 10px rgba(14, 132, 255, 0.7), 0 0 20px rgba(14, 132, 255, 0.5);
   border: 1px solid rgba(14, 132, 255, 0.8);
 }
+
+/* Contact card hover effects */
+.contact-card:hover {
+  transform: translateY(-2px);
+  transition: transform 0.3s ease;
+}
+
+/* Gradient backgrounds */
+.bg-gradient-blue {
+  background: linear-gradient(135deg, #0e84ff 0%, #1a73e8 100%);
+}

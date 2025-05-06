@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Phone,
   Mail,
@@ -19,6 +19,7 @@ import {
   Sparkles,
   Copy,
   Check,
+  ArrowUpRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -26,6 +27,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 export default function DigitalCard() {
   const [activeModal, setActiveModal] = useState<string | null>(null)
   const [emailCopied, setEmailCopied] = useState(false)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
 
   const personalInfo = {
     name: "Yorgo Angelopoulos",
@@ -43,6 +46,15 @@ export default function DigitalCard() {
       bluesky: "https://bsky.app/profile/yorgoangelopoulos.bsky.social",
     },
   }
+
+  // QR kod oluşturma
+  useEffect(() => {
+    // QR kod URL'sini oluştur
+    const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+      personalInfo.websiteUrl,
+    )}&color=0e84ff&bgcolor=17181d`
+    setQrCodeUrl(qrCodeApiUrl)
+  }, [personalInfo.websiteUrl])
 
   const handleAddToContacts = () => {
     // vCard oluşturma mantığı burada olacak
@@ -97,15 +109,39 @@ END:VCARD`
       })
   }
 
+  const copyToClipboard = (text, field) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopiedField(field)
+        setTimeout(() => setCopiedField(null), 2000)
+      })
+      .catch((err) => {
+        console.error("Kopyalama hatası:", err)
+      })
+  }
+
   const closeModal = () => setActiveModal(null)
 
   const downloadQRCode = () => {
-    const link = document.createElement("a")
-    link.href = "/qr-code.png"
-    link.download = "yorgo-angelopoulos-qr.png"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    if (qrCodeUrl) {
+      fetch(qrCodeUrl)
+        .then((response) => response.blob())
+        .then((blob) => {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement("a")
+          link.href = url
+          link.download = "yorgo-angelopoulos-qr.png"
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+        })
+        .catch((error) => {
+          console.error("QR kod indirme hatası:", error)
+          alert("QR kod indirilemedi. Lütfen tekrar deneyin.")
+        })
+    }
   }
 
   const shareQRCode = async () => {
@@ -138,10 +174,8 @@ END:VCARD`
 
         {/* Profile Section */}
         <div className="flex flex-col items-center mt-4">
-          <div className="h-28 w-28 rounded-full border-2 border-[#0e84ff] overflow-hidden bg-transparent shadow-[0_0_10px_rgba(14,132,255,0.5)] flex items-center justify-center">
-            <div className="h-full w-full bg-[#17181d] flex items-center justify-center">
-              <img src="/eg-logo.png" alt={personalInfo.name} className="h-5/6 w-5/6 object-contain" />
-            </div>
+          <div className="h-28 w-28 rounded-full border-2 border-[#0e84ff] overflow-hidden bg-[#17181d] shadow-[0_0_10px_rgba(14,132,255,0.5)] flex items-center justify-center">
+            <img src="/eg-logo.png" alt="Exchange Global Logo" className="h-5/6 w-5/6 object-contain" />
           </div>
           <h2 className="mt-4 text-2xl font-semibold text-[#0e84ff]">{personalInfo.name}</h2>
           <a
@@ -252,7 +286,7 @@ END:VCARD`
       <Dialog open={activeModal === "social"} onOpenChange={closeModal}>
         <DialogContent className="bg-[#1a1b20] text-white border border-[#0e84ff]/30">
           <DialogHeader>
-            <DialogTitle className="text-white">Sosyal Medya</DialogTitle>
+            <DialogTitle className="text-[#0e84ff] text-xl font-bold">Sosyal Medya</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             <a
@@ -278,79 +312,228 @@ END:VCARD`
       </Dialog>
 
       <Dialog open={activeModal === "contact"} onOpenChange={closeModal}>
-        <DialogContent className="bg-[#1a1b20] text-white border border-[#0e84ff]/30">
+        <DialogContent className="bg-[#1a1b20] text-white border border-[#0e84ff]/30 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white">İletişim Bilgileri</DialogTitle>
+            <DialogTitle className="text-[#0e84ff] text-xl font-bold text-center">İletişim Bilgileri</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-[#17181d] border border-[#0e84ff]/20">
-              <WhatsApp className="text-[#0e84ff]" />
-              <div>
-                <p className="text-sm text-gray-400">WhatsApp</p>
-                <button
-                  onClick={openWhatsApp}
-                  className="text-[#0e84ff] hover:underline bg-transparent border-none p-0 cursor-pointer"
-                >
-                  {personalInfo.phone}
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-[#17181d] border border-[#0e84ff]/20">
-              <MessageSquare className="text-[#0e84ff]" />
-              <div>
-                <p className="text-sm text-gray-400">Telegram</p>
-                <button
-                  onClick={openTelegram}
-                  className="text-[#0e84ff] hover:underline bg-transparent border-none p-0 cursor-pointer"
-                >
-                  {personalInfo.telegram}
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-[#17181d] border border-[#0e84ff]/20">
-              <Twitter className="text-[#0e84ff]" />
-              <div>
-                <p className="text-sm text-gray-400">Twitter</p>
-                <a
-                  href={personalInfo.socialMedia.twitter}
-                  className="text-[#0e84ff] hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  @ExchangeGlobal1
-                </a>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-[#17181d] border border-[#0e84ff]/20">
-              <Cloud className="text-[#0e84ff]" />
-              <div>
-                <p className="text-sm text-gray-400">Bluesky</p>
-                <a
-                  href={personalInfo.socialMedia.bluesky}
-                  className="text-[#0e84ff] hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  yorgoangelopoulos.bsky.social
-                </a>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-[#17181d] border border-[#0e84ff]/20">
-              <Mail className="text-[#0e84ff]" />
-              <div>
-                <p className="text-sm text-gray-400">E-posta</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-[#0e84ff]">{personalInfo.email}</span>
-                  <button
-                    onClick={handleEmailClick}
-                    className="text-white bg-[#0e84ff] hover:bg-[#0e84ff]/80 p-1 rounded-md"
-                    title="E-posta adresini kopyala"
-                  >
-                    <Copy size={14} />
-                  </button>
+
+          <div className="space-y-6 mt-4">
+            {/* WhatsApp */}
+            <div className="contact-card transform transition-all duration-300 hover:scale-105">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#25D366]/10 to-[#25D366]/5 border border-[#25D366]/30">
+                <div className="absolute top-0 left-0 w-16 h-16 -translate-x-6 -translate-y-6 rounded-full bg-[#25D366]/20"></div>
+                <div className="absolute bottom-0 right-0 w-16 h-16 translate-x-6 translate-y-6 rounded-full bg-[#25D366]/20"></div>
+
+                <div className="p-4 flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#25D366]/20 flex items-center justify-center shadow-lg">
+                      <WhatsApp size={24} className="text-[#25D366]" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 font-medium">WhatsApp</p>
+                      <p className="text-white text-lg font-semibold">{personalInfo.phone}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => copyToClipboard(personalInfo.phone, "whatsapp")}
+                      className="p-2 rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 transition-colors"
+                      title="Kopyala"
+                      aria-label="WhatsApp numarasını kopyala"
+                    >
+                      {copiedField === "whatsapp" ? (
+                        <Check size={18} className="text-[#25D366]" />
+                      ) : (
+                        <Copy size={18} className="text-[#25D366]" />
+                      )}
+                    </button>
+                    <button
+                      onClick={openWhatsApp}
+                      className="p-2 rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 transition-colors"
+                      title="WhatsApp'ta Aç"
+                      aria-label="WhatsApp'ta aç"
+                    >
+                      <ArrowUpRight size={18} className="text-[#25D366]" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Telegram */}
+            <div className="contact-card transform transition-all duration-300 hover:scale-105">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#0088cc]/10 to-[#0088cc]/5 border border-[#0088cc]/30">
+                <div className="absolute top-0 left-0 w-16 h-16 -translate-x-6 -translate-y-6 rounded-full bg-[#0088cc]/20"></div>
+                <div className="absolute bottom-0 right-0 w-16 h-16 translate-x-6 translate-y-6 rounded-full bg-[#0088cc]/20"></div>
+
+                <div className="p-4 flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#0088cc]/20 flex items-center justify-center shadow-lg">
+                      <MessageSquare size={24} className="text-[#0088cc]" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 font-medium">Telegram</p>
+                      <p className="text-white text-lg font-semibold">{personalInfo.telegram}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => copyToClipboard(personalInfo.telegram, "telegram")}
+                      className="p-2 rounded-full bg-[#0088cc]/10 hover:bg-[#0088cc]/20 transition-colors"
+                      title="Kopyala"
+                      aria-label="Telegram kullanıcı adını kopyala"
+                    >
+                      {copiedField === "telegram" ? (
+                        <Check size={18} className="text-[#0088cc]" />
+                      ) : (
+                        <Copy size={18} className="text-[#0088cc]" />
+                      )}
+                    </button>
+                    <button
+                      onClick={openTelegram}
+                      className="p-2 rounded-full bg-[#0088cc]/10 hover:bg-[#0088cc]/20 transition-colors"
+                      title="Telegram'da Aç"
+                      aria-label="Telegram'da aç"
+                    >
+                      <ArrowUpRight size={18} className="text-[#0088cc]" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Twitter */}
+            <div className="contact-card transform transition-all duration-300 hover:scale-105">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#1DA1F2]/10 to-[#1DA1F2]/5 border border-[#1DA1F2]/30">
+                <div className="absolute top-0 left-0 w-16 h-16 -translate-x-6 -translate-y-6 rounded-full bg-[#1DA1F2]/20"></div>
+                <div className="absolute bottom-0 right-0 w-16 h-16 translate-x-6 translate-y-6 rounded-full bg-[#1DA1F2]/20"></div>
+
+                <div className="p-4 flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#1DA1F2]/20 flex items-center justify-center shadow-lg">
+                      <Twitter size={24} className="text-[#1DA1F2]" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 font-medium">Twitter</p>
+                      <p className="text-white text-lg font-semibold">@ExchangeGlobal1</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => copyToClipboard("@ExchangeGlobal1", "twitter")}
+                      className="p-2 rounded-full bg-[#1DA1F2]/10 hover:bg-[#1DA1F2]/20 transition-colors"
+                      title="Kopyala"
+                      aria-label="Twitter kullanıcı adını kopyala"
+                    >
+                      {copiedField === "twitter" ? (
+                        <Check size={18} className="text-[#1DA1F2]" />
+                      ) : (
+                        <Copy size={18} className="text-[#1DA1F2]" />
+                      )}
+                    </button>
+                    <a
+                      href={personalInfo.socialMedia.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full bg-[#1DA1F2]/10 hover:bg-[#1DA1F2]/20 transition-colors"
+                      title="Twitter'da Aç"
+                      aria-label="Twitter'da aç"
+                    >
+                      <ArrowUpRight size={18} className="text-[#1DA1F2]" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bluesky */}
+            <div className="contact-card transform transition-all duration-300 hover:scale-105">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#0560ff]/10 to-[#0560ff]/5 border border-[#0560ff]/30">
+                <div className="absolute top-0 left-0 w-16 h-16 -translate-x-6 -translate-y-6 rounded-full bg-[#0560ff]/20"></div>
+                <div className="absolute bottom-0 right-0 w-16 h-16 translate-x-6 translate-y-6 rounded-full bg-[#0560ff]/20"></div>
+
+                <div className="p-4 flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#0560ff]/20 flex items-center justify-center shadow-lg">
+                      <Cloud size={24} className="text-[#0560ff]" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 font-medium">Bluesky</p>
+                      <p className="text-white text-lg font-semibold truncate max-w-[180px]">
+                        yorgoangelopoulos.bsky.social
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => copyToClipboard("yorgoangelopoulos.bsky.social", "bluesky")}
+                      className="p-2 rounded-full bg-[#0560ff]/10 hover:bg-[#0560ff]/20 transition-colors"
+                      title="Kopyala"
+                      aria-label="Bluesky kullanıcı adını kopyala"
+                    >
+                      {copiedField === "bluesky" ? (
+                        <Check size={18} className="text-[#0560ff]" />
+                      ) : (
+                        <Copy size={18} className="text-[#0560ff]" />
+                      )}
+                    </button>
+                    <a
+                      href={personalInfo.socialMedia.bluesky}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full bg-[#0560ff]/10 hover:bg-[#0560ff]/20 transition-colors"
+                      title="Bluesky'de Aç"
+                      aria-label="Bluesky'de aç"
+                    >
+                      <ArrowUpRight size={18} className="text-[#0560ff]" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="contact-card transform transition-all duration-300 hover:scale-105">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#EA4335]/10 to-[#EA4335]/5 border border-[#EA4335]/30">
+                <div className="absolute top-0 left-0 w-16 h-16 -translate-x-6 -translate-y-6 rounded-full bg-[#EA4335]/20"></div>
+                <div className="absolute bottom-0 right-0 w-16 h-16 translate-x-6 translate-y-6 rounded-full bg-[#EA4335]/20"></div>
+
+                <div className="p-4 flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#EA4335]/20 flex items-center justify-center shadow-lg">
+                      <Mail size={24} className="text-[#EA4335]" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 font-medium">E-posta</p>
+                      <p className="text-white text-lg font-semibold truncate max-w-[180px]">{personalInfo.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => copyToClipboard(personalInfo.email, "email")}
+                      className="p-2 rounded-full bg-[#EA4335]/10 hover:bg-[#EA4335]/20 transition-colors"
+                      title="Kopyala"
+                      aria-label="E-posta adresini kopyala"
+                    >
+                      {copiedField === "email" ? (
+                        <Check size={18} className="text-[#EA4335]" />
+                      ) : (
+                        <Copy size={18} className="text-[#EA4335]" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 text-center">
+            <Button
+              onClick={handleAddToContacts}
+              className="bg-gradient-to-r from-[#0e84ff] to-[#0560ff] hover:from-[#0560ff] hover:to-[#0e84ff] text-white border-none shadow-lg shadow-[#0e84ff]/20 transition-all duration-500"
+            >
+              Tüm Bilgileri Rehbere Ekle
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -358,9 +541,9 @@ END:VCARD`
       <Dialog open={activeModal === "address"} onOpenChange={closeModal}>
         <DialogContent className="bg-[#1a1b20] text-white border border-[#0e84ff]/30">
           <DialogHeader>
-            <DialogTitle className="text-white">Adres Bilgileri</DialogTitle>
+            <DialogTitle className="text-[#0e84ff] text-xl font-bold">Adres Bilgileri</DialogTitle>
           </DialogHeader>
-          <div className="p-4 rounded-lg bg-[#17181d] border border-[#0e84ff]/20 flex flex-col items-center">
+          <div className="p-4 rounded-lg bg-gradient-to-r from-[#17181d] to-[#1c1d24] border border-[#0e84ff]/20 flex flex-col items-center">
             <p className="text-center mb-4">{personalInfo.address}</p>
             <Button onClick={openWhatsApp} className="flex items-center gap-2 bg-[#0e84ff] hover:bg-[#0e84ff]/80">
               <WhatsApp size={16} />
@@ -373,11 +556,23 @@ END:VCARD`
       <Dialog open={activeModal === "qr"} onOpenChange={closeModal}>
         <DialogContent className="bg-[#1a1b20] text-white border border-[#0e84ff]/30">
           <DialogHeader>
-            <DialogTitle className="text-white">QR Kod</DialogTitle>
+            <DialogTitle className="text-[#0e84ff] text-xl font-bold">QR Kod</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center">
             <div className="p-2 border-2 border-[#0e84ff]/50 rounded-lg shadow-[0_0_10px_rgba(14,132,255,0.3)] bg-[#17181d]">
-              <img src="/qr-code.png" alt="QR Code" className="h-48 w-48" />
+              {qrCodeUrl ? (
+                <img
+                  src={qrCodeUrl || "/placeholder.svg"}
+                  alt="QR Code"
+                  className="h-48 w-48 rounded-md"
+                  onError={(e) => {
+                    console.error("QR kod yüklenemedi")
+                    e.currentTarget.src = "/qr-code.png"
+                  }}
+                />
+              ) : (
+                <img src="/qr-code.png" alt="QR Code" className="h-48 w-48 rounded-md" />
+              )}
             </div>
             <p className="text-center text-sm text-gray-400 mt-2 mb-4">
               Bu QR kodu taratarak kartviziti paylaşabilirsiniz
@@ -399,7 +594,7 @@ END:VCARD`
       <Dialog open={activeModal === "share"} onOpenChange={closeModal}>
         <DialogContent className="bg-[#1a1b20] text-white border border-[#0e84ff]/30">
           <DialogHeader>
-            <DialogTitle className="text-white">Paylaş</DialogTitle>
+            <DialogTitle className="text-[#0e84ff] text-xl font-bold">Paylaş</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             <button
