@@ -1,4 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next()
@@ -7,7 +8,7 @@ export function middleware(request: NextRequest) {
   response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://api.qrserver.com; img-src 'self' https://api.qrserver.com data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self';",
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://api.qrserver.com; img-src 'self' https://api.qrserver.com data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'",
   )
   response.headers.set("X-Frame-Options", "SAMEORIGIN")
   response.headers.set("X-Content-Type-Options", "nosniff")
@@ -17,6 +18,7 @@ export function middleware(request: NextRequest) {
   return response
 }
 
+// Tüm rotalar için middleware'i çalıştır, ancak statik dosyaları hariç tut
 export const config = {
-  matcher: "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  matcher: "/((?!_next/static|_next/image|favicon.ico).*)",
 }
