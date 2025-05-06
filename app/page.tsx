@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Phone,
   Mail,
@@ -17,13 +17,15 @@ import {
   Share2,
   ExternalLink,
   Sparkles,
+  Copy,
+  Check,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function DigitalCard() {
   const [activeModal, setActiveModal] = useState<string | null>(null)
-  const [emailClicked, setEmailClicked] = useState(false)
+  const [emailCopied, setEmailCopied] = useState(false)
 
   const personalInfo = {
     name: "Yorgo Angelopoulos",
@@ -80,31 +82,20 @@ END:VCARD`
 
   const handleEmailClick = (e) => {
     e.preventDefault()
-    setEmailClicked(true)
 
-    // Birden fazla yöntem deneyelim
-    const mailtoLink = `mailto:${personalInfo.email}`
-
-    // Yöntem 1: window.location.href
-    window.location.href = mailtoLink
-
-    // Yöntem 2: setTimeout ile window.open (bazı tarayıcılarda daha iyi çalışabilir)
-    setTimeout(() => {
-      window.open(mailtoLink, "_self")
-    }, 100)
+    // E-posta adresini panoya kopyala
+    navigator.clipboard
+      .writeText(personalInfo.email)
+      .then(() => {
+        setEmailCopied(true)
+        setTimeout(() => setEmailCopied(false), 2000)
+        alert(`E-posta adresi kopyalandı: ${personalInfo.email}`)
+      })
+      .catch((err) => {
+        console.error("Kopyalama hatası:", err)
+        alert(`E-posta adresini manuel olarak kopyalayın: ${personalInfo.email}`)
+      })
   }
-
-  // E-posta tıklaması için bildirim
-  useEffect(() => {
-    if (emailClicked) {
-      const timer = setTimeout(() => {
-        alert(`E-posta istemcisi açılamadıysa, lütfen manuel olarak e-posta gönderin: ${personalInfo.email}`)
-        setEmailClicked(false)
-      }, 2000)
-
-      return () => clearTimeout(timer)
-    }
-  }, [emailClicked, personalInfo.email])
 
   const closeModal = () => setActiveModal(null)
 
@@ -141,7 +132,7 @@ END:VCARD`
         {/* Header */}
         <div className="bg-[#1a1b20] p-4 relative">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white">Exchange Global</h1>
+            <h1 className="text-3xl font-bold text-[#0e84ff]">Exchange Global</h1>
           </div>
         </div>
 
@@ -152,12 +143,12 @@ END:VCARD`
               <img src="/eg-logo.png" alt={personalInfo.name} className="h-5/6 w-5/6 object-contain" />
             </div>
           </div>
-          <h2 className="mt-4 text-2xl font-semibold text-white">{personalInfo.name}</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-[#0e84ff]">{personalInfo.name}</h2>
           <a
             href={personalInfo.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-[#0e84ff] transition-colors duration-300 flex items-center gap-1"
+            className="text-[#0e84ff] hover:text-[#0e84ff]/80 transition-colors duration-300 flex items-center gap-1"
           >
             <span>{personalInfo.website}</span>
             <ExternalLink size={14} />
@@ -231,7 +222,11 @@ END:VCARD`
             onClick={handleEmailClick}
             className="flex flex-col items-center justify-center rounded-lg bg-[#1a1b20] p-4 text-white border border-[#0e84ff]/30 hover:border-[#0e84ff] transition-all duration-300 shadow-[0_0_5px_rgba(14,132,255,0.2)] hover:shadow-[0_0_8px_rgba(14,132,255,0.4)]"
           >
-            <Mail size={24} className="text-[#0e84ff]" />
+            {emailCopied ? (
+              <Check size={24} className="text-green-500" />
+            ) : (
+              <Mail size={24} className="text-[#0e84ff]" />
+            )}
             <span className="mt-2 text-xs">E-posta</span>
           </button>
 
@@ -344,12 +339,16 @@ END:VCARD`
               <Mail className="text-[#0e84ff]" />
               <div>
                 <p className="text-sm text-gray-400">E-posta</p>
-                <button
-                  onClick={handleEmailClick}
-                  className="text-[#0e84ff] hover:underline bg-transparent border-none p-0 cursor-pointer"
-                >
-                  {personalInfo.email}
-                </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#0e84ff]">{personalInfo.email}</span>
+                  <button
+                    onClick={handleEmailClick}
+                    className="text-white bg-[#0e84ff] hover:bg-[#0e84ff]/80 p-1 rounded-md"
+                    title="E-posta adresini kopyala"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
