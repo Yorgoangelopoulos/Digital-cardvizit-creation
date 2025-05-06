@@ -15,6 +15,8 @@ import {
   Cloud,
   Download,
   Share2,
+  ExternalLink,
+  Sparkles,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -33,7 +35,7 @@ export default function DigitalCard() {
     phoneNoSpaces: "+908504300267",
     email: "yorgoangelopoulos@gmail.com",
     telegram: "yorgoangelopoulos",
-    address: "Örnek Mahallesi, Örnek Sokak No:1, İstanbul, Türkiye",
+    address: "Adres bilgileri için lütfen iletişime geçin.",
     socialMedia: {
       twitter: "https://x.com/ExchangeGlobal1",
       bluesky: "https://bsky.app/profile/yorgoangelopoulos.bsky.social",
@@ -49,7 +51,6 @@ ORG:${personalInfo.company}
 TITLE:${personalInfo.title}
 TEL:${personalInfo.phone}
 EMAIL:${personalInfo.email}
-ADR:;;${personalInfo.address};;;
 URL:${personalInfo.website}
 END:VCARD`
 
@@ -156,9 +157,10 @@ END:VCARD`
             href={personalInfo.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-[#0e84ff] transition-colors duration-300"
+            className="text-gray-400 hover:text-[#0e84ff] transition-colors duration-300 flex items-center gap-1"
           >
-            {personalInfo.website}
+            <span>{personalInfo.website}</span>
+            <ExternalLink size={14} />
           </a>
 
           {/* Action Buttons */}
@@ -173,7 +175,7 @@ END:VCARD`
               className="rounded-md py-6 bg-[#0e84ff] hover:bg-[#0e84ff]/80 text-white transition-all duration-300 shadow-[0_0_10px_rgba(14,132,255,0.5)]"
               onClick={handleCall}
             >
-              Hemen Ara
+              WhatsApp
             </Button>
           </div>
         </div>
@@ -242,7 +244,13 @@ END:VCARD`
           </button>
         </div>
 
-        <div className="py-4 text-center text-sm text-gray-400">Exchange Global</div>
+        <div className="py-4 text-center text-sm text-gray-400">
+          <div className="flex items-center justify-center gap-1">
+            <Sparkles size={14} className="text-[#0e84ff]" />
+            <span>Exchange Global</span>
+            <Sparkles size={14} className="text-[#0e84ff]" />
+          </div>
+        </div>
       </div>
 
       {/* Modals */}
@@ -353,9 +361,12 @@ END:VCARD`
           <DialogHeader>
             <DialogTitle className="text-white">Adres Bilgileri</DialogTitle>
           </DialogHeader>
-          <div className="p-3 rounded-lg bg-[#17181d] border border-[#0e84ff]/20">
-            <p className="text-sm text-gray-400">Adres</p>
-            <p>{personalInfo.address}</p>
+          <div className="p-4 rounded-lg bg-[#17181d] border border-[#0e84ff]/20 flex flex-col items-center">
+            <p className="text-center mb-4">{personalInfo.address}</p>
+            <Button onClick={openWhatsApp} className="flex items-center gap-2 bg-[#0e84ff] hover:bg-[#0e84ff]/80">
+              <WhatsApp size={16} />
+              <span>İletişime Geç</span>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
