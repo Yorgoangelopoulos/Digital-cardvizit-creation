@@ -8,7 +8,6 @@ import {
   QrCode,
   Instagram,
   Facebook,
-  Linkedin,
   Twitter,
   PhoneIcon as WhatsApp,
   MessageSquare,
@@ -23,6 +22,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { toast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 
 export default function DigitalCard() {
   const [activeModal, setActiveModal] = useState<string | null>(null)
@@ -34,8 +35,8 @@ export default function DigitalCard() {
     name: "Yorgo Angelopoulos",
     title: "Exchange Global",
     company: "Exchange Global",
-    website: "yorgoangelopoulos.app",
-    websiteUrl: "https://yorgoangelopoulos.app",
+    website: "exchangeglobal.net",
+    websiteUrl: "https://exchangeglobal.net",
     phone: "+90 850 430 02 67",
     phoneNoSpaces: "+908504300267",
     email: "yorgoangelopoulos@gmail.com",
@@ -44,6 +45,8 @@ export default function DigitalCard() {
     socialMedia: {
       twitter: "https://x.com/ExchangeGlobal1",
       bluesky: "https://bsky.app/profile/yorgoangelopoulos.bsky.social",
+      instagram: "https://www.instagram.com/exchang.eglobal/",
+      facebook: "https://www.facebook.com/exchangeglobal/",
     },
   }
 
@@ -101,11 +104,19 @@ END:VCARD`
       .then(() => {
         setEmailCopied(true)
         setTimeout(() => setEmailCopied(false), 2000)
-        alert(`E-posta adresi kopyalandı: ${personalInfo.email}`)
+        toast({
+          title: "Posta adresi kopyalanmıştır",
+          description: personalInfo.email,
+          className: "bg-green-500 text-white border-green-600",
+        })
       })
       .catch((err) => {
         console.error("Kopyalama hatası:", err)
-        alert(`E-posta adresini manuel olarak kopyalayın: ${personalInfo.email}`)
+        toast({
+          title: "Kopyalama hatası",
+          description: "Lütfen e-posta adresini manuel olarak kopyalayın",
+          variant: "destructive",
+        })
       })
   }
 
@@ -115,9 +126,19 @@ END:VCARD`
       .then(() => {
         setCopiedField(field)
         setTimeout(() => setCopiedField(null), 2000)
+        toast({
+          title: "Kopyalandı",
+          description: text,
+          className: "bg-green-500 text-white border-green-600",
+        })
       })
       .catch((err) => {
         console.error("Kopyalama hatası:", err)
+        toast({
+          title: "Kopyalama hatası",
+          description: "Lütfen metni manuel olarak kopyalayın",
+          variant: "destructive",
+        })
       })
   }
 
@@ -139,7 +160,11 @@ END:VCARD`
         })
         .catch((error) => {
           console.error("QR kod indirme hatası:", error)
-          alert("QR kod indirilemedi. Lütfen tekrar deneyin.")
+          toast({
+            title: "QR kod indirme hatası",
+            description: "Lütfen tekrar deneyin",
+            variant: "destructive",
+          })
         })
     }
   }
@@ -155,7 +180,11 @@ END:VCARD`
       } else {
         // Fallback for browsers that don't support Web Share API
         navigator.clipboard.writeText(personalInfo.websiteUrl)
-        alert("Bağlantı panoya kopyalandı!")
+        toast({
+          title: "Bağlantı kopyalandı",
+          description: personalInfo.websiteUrl,
+          className: "bg-green-500 text-white border-green-600",
+        })
       }
     } catch (error) {
       console.error("Paylaşım hatası:", error)
@@ -164,6 +193,7 @@ END:VCARD`
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#17181d] p-4">
+      <Toaster />
       <div className="w-full max-w-md rounded-3xl bg-[#1e1f24] shadow-xl overflow-hidden border border-[#0e84ff]/20">
         {/* Header */}
         <div className="bg-[#1a1b20] p-4 relative">
@@ -213,8 +243,8 @@ END:VCARD`
           >
             <div className="grid grid-cols-2 gap-1">
               <Instagram size={18} className="text-[#0e84ff]" />
-              <Linkedin size={18} className="text-[#0e84ff]" />
               <Facebook size={18} className="text-[#0e84ff]" />
+              <Twitter size={18} className="text-[#0e84ff]" />
               <Mail size={18} className="text-[#0e84ff]" />
             </div>
             <span className="mt-2 text-xs">Sosyal Medya</span>
@@ -297,6 +327,24 @@ END:VCARD`
             >
               <Twitter className="text-[#0e84ff]" />
               <span>Twitter</span>
+            </a>
+            <a
+              href={personalInfo.socialMedia.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 p-3 rounded-lg bg-[#17181d] hover:bg-[#1e1f24] border border-[#0e84ff]/20 hover:border-[#0e84ff]/50 transition-all duration-300"
+            >
+              <Instagram className="text-[#0e84ff]" />
+              <span>Instagram</span>
+            </a>
+            <a
+              href={personalInfo.socialMedia.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 p-3 rounded-lg bg-[#17181d] hover:bg-[#1e1f24] border border-[#0e84ff]/20 hover:border-[#0e84ff]/50 transition-all duration-300"
+            >
+              <Facebook className="text-[#0e84ff]" />
+              <span>Facebook</span>
             </a>
             <a
               href={personalInfo.socialMedia.bluesky}
@@ -402,6 +450,50 @@ END:VCARD`
               </div>
             </div>
 
+            {/* Facebook */}
+            <div className="contact-card transform transition-all duration-300 hover:scale-105">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#1877F2]/10 to-[#1877F2]/5 border border-[#1877F2]/30">
+                <div className="absolute top-0 left-0 w-16 h-16 -translate-x-6 -translate-y-6 rounded-full bg-[#1877F2]/20"></div>
+                <div className="absolute bottom-0 right-0 w-16 h-16 translate-x-6 translate-y-6 rounded-full bg-[#1877F2]/20"></div>
+
+                <div className="p-4 flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#1877F2]/20 flex items-center justify-center shadow-lg">
+                      <Facebook size={24} className="text-[#1877F2]" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 font-medium">Facebook</p>
+                      <p className="text-white text-lg font-semibold">Exchange Global</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => copyToClipboard("Exchange Global", "facebook")}
+                      className="p-2 rounded-full bg-[#1877F2]/10 hover:bg-[#1877F2]/20 transition-colors"
+                      title="Kopyala"
+                      aria-label="Facebook kullanıcı adını kopyala"
+                    >
+                      {copiedField === "facebook" ? (
+                        <Check size={18} className="text-[#1877F2]" />
+                      ) : (
+                        <Copy size={18} className="text-[#1877F2]" />
+                      )}
+                    </button>
+                    <a
+                      href={personalInfo.socialMedia.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full bg-[#1877F2]/10 hover:bg-[#1877F2]/20 transition-colors"
+                      title="Facebook'ta Aç"
+                      aria-label="Facebook'ta aç"
+                    >
+                      <ArrowUpRight size={18} className="text-[#1877F2]" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Twitter */}
             <div className="contact-card transform transition-all duration-300 hover:scale-105">
               <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#1DA1F2]/10 to-[#1DA1F2]/5 border border-[#1DA1F2]/30">
@@ -446,46 +538,44 @@ END:VCARD`
               </div>
             </div>
 
-            {/* Bluesky */}
+            {/* Instagram */}
             <div className="contact-card transform transition-all duration-300 hover:scale-105">
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#0560ff]/10 to-[#0560ff]/5 border border-[#0560ff]/30">
-                <div className="absolute top-0 left-0 w-16 h-16 -translate-x-6 -translate-y-6 rounded-full bg-[#0560ff]/20"></div>
-                <div className="absolute bottom-0 right-0 w-16 h-16 translate-x-6 translate-y-6 rounded-full bg-[#0560ff]/20"></div>
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#E1306C]/10 to-[#E1306C]/5 border border-[#E1306C]/30">
+                <div className="absolute top-0 left-0 w-16 h-16 -translate-x-6 -translate-y-6 rounded-full bg-[#E1306C]/20"></div>
+                <div className="absolute bottom-0 right-0 w-16 h-16 translate-x-6 translate-y-6 rounded-full bg-[#E1306C]/20"></div>
 
                 <div className="p-4 flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[#0560ff]/20 flex items-center justify-center shadow-lg">
-                      <Cloud size={24} className="text-[#0560ff]" />
+                    <div className="w-12 h-12 rounded-full bg-[#E1306C]/20 flex items-center justify-center shadow-lg">
+                      <Instagram size={24} className="text-[#E1306C]" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400 font-medium">Bluesky</p>
-                      <p className="text-white text-lg font-semibold truncate max-w-[180px]">
-                        yorgoangelopoulos.bsky.social
-                      </p>
+                      <p className="text-sm text-gray-400 font-medium">Instagram</p>
+                      <p className="text-white text-lg font-semibold">@exchang.eglobal</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => copyToClipboard("yorgoangelopoulos.bsky.social", "bluesky")}
-                      className="p-2 rounded-full bg-[#0560ff]/10 hover:bg-[#0560ff]/20 transition-colors"
+                      onClick={() => copyToClipboard("@exchang.eglobal", "instagram")}
+                      className="p-2 rounded-full bg-[#E1306C]/10 hover:bg-[#E1306C]/20 transition-colors"
                       title="Kopyala"
-                      aria-label="Bluesky kullanıcı adını kopyala"
+                      aria-label="Instagram kullanıcı adını kopyala"
                     >
-                      {copiedField === "bluesky" ? (
-                        <Check size={18} className="text-[#0560ff]" />
+                      {copiedField === "instagram" ? (
+                        <Check size={18} className="text-[#E1306C]" />
                       ) : (
-                        <Copy size={18} className="text-[#0560ff]" />
+                        <Copy size={18} className="text-[#E1306C]" />
                       )}
                     </button>
                     <a
-                      href={personalInfo.socialMedia.bluesky}
+                      href={personalInfo.socialMedia.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-[#0560ff]/10 hover:bg-[#0560ff]/20 transition-colors"
-                      title="Bluesky'de Aç"
-                      aria-label="Bluesky'de aç"
+                      className="p-2 rounded-full bg-[#E1306C]/10 hover:bg-[#E1306C]/20 transition-colors"
+                      title="Instagram'da Aç"
+                      aria-label="Instagram'da aç"
                     >
-                      <ArrowUpRight size={18} className="text-[#0560ff]" />
+                      <ArrowUpRight size={18} className="text-[#E1306C]" />
                     </a>
                   </div>
                 </div>
@@ -621,13 +711,13 @@ END:VCARD`
               <span>Twitter</span>
             </a>
             <a
-              href={personalInfo.socialMedia.bluesky}
+              href={personalInfo.socialMedia.facebook}
               target="_blank"
               rel="noopener noreferrer"
               className="flex flex-col items-center gap-2 p-4 rounded-lg bg-[#17181d] hover:bg-[#1e1f24] border border-[#0e84ff]/20 hover:border-[#0e84ff]/50 transition-all duration-300"
             >
-              <Cloud className="text-[#0e84ff]" size={24} />
-              <span>Bluesky</span>
+              <Facebook className="text-[#0e84ff]" size={24} />
+              <span>Facebook</span>
             </a>
           </div>
         </DialogContent>
